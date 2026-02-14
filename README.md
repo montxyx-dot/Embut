@@ -1,0 +1,1 @@
+# Cursebane-Shop-info
