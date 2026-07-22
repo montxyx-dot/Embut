@@ -1,248 +1,1113 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cursebane Community</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBT Event - Survival Challenge</title>
+    <!-- Google Fonts: Outfit & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-darker: #0b0b0b;
+            --bg-dark: #111111;
+            --bg-card: #161616;
+            --purple-primary: #7C3AED;
+            --purple-secondary: #8B5CF6;
+            --purple-glow: #A855F7;
+            --text-white: #FFFFFF;
+            --text-muted: #9CA3AF;
+            --glass-bg: rgba(22, 22, 22, 0.65);
+            --glass-border: rgba(139, 92, 246, 0.25);
+            --glass-border-hover: rgba(168, 85, 247, 0.6);
+            --glow-shadow: 0 0 20px rgba(124, 58, 237, 0.35);
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
 
-<style>
-body{
-margin:0;
-background:linear-gradient(180deg,#0f0f0f,#1a1a1a);
-color:#ddd;
-font-family:'Cinzel',serif;
-overflow-x:hidden;
-}
+        body {
+            background-color: var(--bg-darker);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-section{
-min-height:100vh;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-padding:40px;
-text-align:center;
-}
+        /* Background dengan Overlay Gelap */
+        .minecraft-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(11, 11, 11, 0.75) 0%, rgba(11, 11, 11, 0.95) 100%), 
+                        url('https://images.unsplash.com/photo-1607853202273-797f1c22a38e?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+            z-index: -2;
+            filter: brightness(0.6) contrast(1.1);
+        }
 
-h1{
-font-size:50px;
-color:silver;
-text-shadow:0 0 20px gray;
-}
+        /* Ambient Glow Effect di Background */
+        .ambient-glow {
+            position: fixed;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.25) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulseGlow 8s infinite alternate ease-in-out;
+        }
 
-button{
-padding:12px 25px;
-background:#2b2b2b;
-color:white;
-border:1px solid silver;
-cursor:pointer;
-margin:10px;
-transition:0.3s;
-}
+        @keyframes pulseGlow {
+            0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0.9; transform: translateX(-50%) scale(1.2); }
+        }
 
-button:hover{
-background:silver;
-color:black;
-}
+        /* --- NAVBAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            z-index: 1000;
+            transition: all 0.4s ease;
+        }
 
-.hidden{display:none;}
+        .navbar.scrolled {
+            background: rgba(11, 11, 11, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 15px 8%;
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-.menu-box{
-display:flex;
-gap:20px;
-flex-wrap:wrap;
-justify-content:center;
-}
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--text-white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
 
-.card{
-background:#111;
-border:1px solid silver;
-padding:20px;
-width:260px;
-}
+        .logo span {
+            color: var(--purple-glow);
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+        }
 
-.card:hover{
-background:#1f1f1f;
-}
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
 
-.member-list{
-text-align:left;
-max-width:800px;
-margin-top:30px;
-}
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-.mystery{
-position:fixed;
-bottom:20px;
-right:20px;
-background:black;
-color:white;
-width:40px;
-height:40px;
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-}
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-white);
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+        }
 
-.mystery-box{
-position:fixed;
-bottom:80px;
-right:20px;
-background:black;
-color:white;
-padding:20px;
-display:none;
-}
+        .nav-btn-discord {
+            background: rgba(88, 101, 242, 0.2);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            color: #fff !important;
+            padding: 8px 18px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-a{color:silver;text-decoration:none;}
-</style>
+        .nav-btn-discord:hover {
+            background: rgba(88, 101, 242, 0.5) !important;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+        }
+
+        /* --- UI COMPONENTS & GLASSMORPHISM --- */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--glow-shadow);
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--purple-primary) 0%, var(--purple-glow) 100%);
+            color: var(--text-white);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--purple-glow);
+        }
+
+        /* --- PAGES / SECTIONS MANAGEMENT --- */
+        .page-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            padding: 120px 8% 60px 8%;
+            min-height: 100vh;
+        }
+
+        .page-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- HERO SECTION (HOME) --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 60px;
+        }
+
+        .badge-ebt {
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid var(--purple-secondary);
+            color: var(--purple-glow);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 15px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #CBD5E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 35px;
+            font-style: italic;
+        }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin: 60px 0 40px 0;
+        }
+
+        .stat-card {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--purple-glow);
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Recent Participants Preview */
+        .preview-section {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+
+        .preview-section h3 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        /* --- MENU DAFTAR (KATEGORI) --- */
+        .category-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 800px;
+            margin: 40px auto 0 auto;
+        }
+
+        .category-card {
+            padding: 40px 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(124, 58, 237, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--purple-glow);
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .category-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .category-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        /* --- FORM STYLING --- */
+        .form-container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(11, 11, 11, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: var(--purple-glow);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+            background: rgba(11, 11, 11, 0.8);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+
+        .player-fields-block {
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .player-fields-block .player-fields-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--purple-glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        /* --- HALAMAN PESERTA --- */
+        .peserta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 18px 12px 42px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .peserta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card-peserta {
+            padding: 20px;
+        }
+
+        .card-peserta-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--purple-glow);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .player-list {
+            list-style: none;
+        }
+
+        .player-list li {
+            padding: 6px 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .player-list li:last-child {
+            border-bottom: none;
+        }
+
+        .player-name-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .player-mc-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            padding-left: 18px;
+        }
+
+        .player-list li i {
+            font-size: 0.7rem;
+            color: var(--purple-secondary);
+        }
+
+        /* --- NOTIFICATION TOAST & LOADING --- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-color: #EF4444;
+        }
+
+        .toast.error i {
+            color: #EF4444;
+        }
+
+        .toast.success {
+            border-color: #10B981;
+        }
+
+        .toast.success i {
+            color: #10B981;
+        }
+
+        /* Spinner Loading */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Global Opening Animation */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            .navbar { padding: 15px 5%; }
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                right: -100%;
+                width: 80%;
+                height: calc(100vh - 70px);
+                background: rgba(11, 11, 11, 0.95);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 40px;
+                transition: 0.4s ease;
+                border-left: 1px solid var(--glass-border);
+            }
+            .nav-links.active { right: 0; }
+            .menu-toggle { display: block !important; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            .form-container { padding: 25px; }
+            .peserta-header { flex-direction: column; align-items: stretch; }
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #fff;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- SLIDE 1 -->
-<section id="home">
-<h1>Welcome To Cursebane</h1>
-<p>Website resmi Curse Community.<br>Tempat sejarah, perjalanan, dan top up server Curse.</p>
-<button onclick="enterSite()">Enter</button>
-</section>
+    <!-- Background Elements -->
+    <div class="minecraft-bg"></div>
+    <div class="ambient-glow"></div>
 
-<!-- SLIDE 2 -->
-<section id="menu" class="hidden">
-<h1>Cursebane Community</h1>
-<div class="menu-box">
-<button onclick="showSejarah()">Sejarah Curse</button>
-<button onclick="showTopup()">Cursebane Top Up</button>
-<button onclick="showSeries()">Series Yang Hadir</button>
-</div>
-</section>
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <a class="logo" onclick="navigateTo('home')">
+            <i class="fa-solid fa-cube"></i> EBT <span>EVENT</span>
+        </a>
+        <div class="menu-toggle" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a onclick="navigateTo('home')" class="nav-item active" id="nav-home">Home</a></li>
+            <li><a onclick="navigateTo('menu-daftar')" class="nav-item" id="nav-daftar">Daftar</a></li>
+            <li><a onclick="navigateTo('peserta')" class="nav-item" id="nav-peserta">Peserta</a></li>
+            <li><a href="https://discord.gg" target="_blank" class="nav-btn-discord"><i class="fa-brands fa-discord"></i> Discord</a></li>
+        </ul>
+    </nav>
 
-<!-- SEJARAH -->
-<section id="sejarah" class="hidden">
-<h1>Sejarah Curse</h1>
-<p style="max-width:900px;line-height:1.7;text-align:justify;">
-Curse pertama kali didirikan pada Februari 2023 dengan nama <b>Curse Vanilla MCPE</b>, 
-server bertema vanilla sederhana yang berjalan hingga Mei 2023. 
-Server ini dibuat oleh Montxyx — nama yang berasal dari nickname acak saat ia bermain Minecraft MCPE.
+    <!-- ========================================== -->
+    <!-- 1. HOME SECTION -->
+    <!-- ========================================== -->
+    <section id="home" class="page-section active">
+        <div class="hero">
+            <div class="badge-ebt">EBT EVENT</div>
+            <h1>Survival Challenge</h1>
+            <p>"Bertahan hidup hingga akhir."</p>
+            <button class="btn" onclick="navigateTo('menu-daftar')">
+                <i class="fa-solid fa-gamepad"></i> Daftar Sekarang
+            </button>
 
-Series kedua adalah <b>COLTK (Curse Of The Legend Key)</b>, 
-server bertema BHC dengan custom enchant level tinggi, 
-berjalan dari Desember 2023 hingga Maret 2024. 
-Di fase inilah Mont mulai membangun series Java Edition.
+            <!-- STATISTIK -->
+            <div class="stats-container">
+                <div class="glass-card stat-card">
+                    <i class="fa-solid fa-users"></i>
+                    <div class="stat-number" id="statTotal">0</div>
+                    <div class="stat-label">Total Peserta</div>
+                </div>
+                <div class="glass-card stat-card">
+                    <i class="fa-solid fa-user-group"></i>
+                    <div class="stat-number" id="statTim">0</div>
+                    <div class="stat-label">Kategori Tim</div>
+                </div>
+                <div class="glass-card stat-card">
+                    <i class="fa-solid fa-user"></i>
+                    <div class="stat-number" id="statSolo">0</div>
+                    <div class="stat-label">Kategori Solo</div>
+                </div>
+            </div>
 
-Mont kemudian bertemu Epan (fase 2, Januari 2024), 
-dan mulai belajar plugin serta script meski series awal belum sempurna.
+            <!-- PREVIEW PESERTA TERBARU -->
+            <div class="preview-section">
+                <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--purple-glow);"></i> Peserta Pendaftar Terbaru</h3>
+                <div class="preview-grid" id="recentParticipants">
+                    <!-- Data otomatis dari script -->
+                </div>
+            </div>
+        </div>
+    </section>
 
-Perjalanan berlanjut ke server Last Warrior & LWHC, 
-di mana Mont mengenal Sanopalz dan Zensuan. 
-Sanopalz menjadi salah satu sosok penting yang membantu setup server.
+    <!-- ========================================== -->
+    <!-- 2. MENU DAFTAR (KATEGORI) -->
+    <!-- ========================================== -->
+    <section id="menu-daftar" class="page-section">
+        <button class="btn btn-secondary" onclick="navigateTo('home')" style="margin-bottom: 20px;">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </button>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2>Pilih Kategori Pendaftaran</h2>
+            <p style="color: var(--text-muted);">Tentukan mode bermainmu dalam Survival Challenge ini.</p>
+        </div>
 
-Series berikutnya adalah <b>Cursefury Legends (CFL)</b>, 
-awal kebangkitan besar Curse di Java Edition. 
-Mont merekrut Rexdzio, Ahmad (PakSamsul7), serta didukung Latif.
+        <div class="category-container">
+            <!-- 1. Card Daftar Tim -->
+            <div class="glass-card category-card">
+                <div class="category-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3>Daftar Tim</h3>
+                <p>Daftar bersama tim yang berisi 3 pemain.</p>
+                <button class="btn" style="width: 100%;" onclick="navigateTo('form-tim')">Mulai</button>
+            </div>
 
-Kemudian hadir Curseborne Kingdom. 
-Setelah 3 tahun perjalanan (2023–2026), 
-Mont memutuskan membuat series terakhir sebagai bentuk penghormatan kepada Curse Community.
+            <!-- 2. Card Daftar Solo -->
+            <div class="glass-card category-card">
+                <div class="category-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h3>Daftar Solo</h3>
+                <p>Daftar sebagai pemain solo.</p>
+                <button class="btn" style="width: 100%;" onclick="navigateTo('form-solo')">Mulai</button>
+            </div>
+        </div>
+    </section>
 
-Kini lahirlah server terakhir: 
-Survival RPG dengan custom enchant luar biasa dan dungeon menantang.
+    <!-- ========================================== -->
+    <!-- 3. FORM TIM -->
+    <!-- ========================================== -->
+    <section id="form-tim" class="page-section">
+        <div class="glass-card form-container">
+            <div class="form-header">
+                <h2>Formulir Registrasi Tim</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Masukkan identitas tim dan seluruh anggotamu.</p>
+            </div>
+            <form id="teamForm" onsubmit="handleRegister(event, 'tim')">
+                <div class="form-group">
+                    <label>Nama Tim</label>
+                    <input type="text" id="teamName" placeholder="Contoh: Nova Team">
+                </div>
 
-Mont berterima kasih kepada seluruh member dan support system yang telah menemani perjalanan ini.
-</p>
+                <div class="player-fields-block">
+                    <div class="player-fields-title">Player 1 (Ketua)</div>
+                    <div class="form-group">
+                        <label>Nama</label>
+                        <input type="text" id="teamP1Name" placeholder="Nama asli Player 1">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Nama Minecraft</label>
+                        <input type="text" id="teamP1Mc" placeholder="Nickname Minecraft Player 1">
+                    </div>
+                </div>
 
-<div class="member-list">
-<h2>Member Curse Community</h2>
-<ul>
-<li><b>Owner:</b> Mont</li>
-<li><b>Admin:</b> Xeons, Ramaaaaaaaaaaaaa, Sanopalz</li>
-<li><b>Animator:</b> Rossy</li>
-<li><b>Donatur:</b> Ahmad</li>
-<li><b>Support:</b> Epan</li>
-<li><b>Streamer:</b> Zuanmc, Inderaa, Shade, Ajeul, Latif</li>
-<li><b>Premium:</b> Riju, APIP</li>
-<li><b>Member:</b> Kelpin, Ziorex, Vinoxkal, Eko, Hartana, Zensuan</li>
-</ul>
-</div>
+                <div class="player-fields-block">
+                    <div class="player-fields-title">Player 2</div>
+                    <div class="form-group">
+                        <label>Nama</label>
+                        <input type="text" id="teamP2Name" placeholder="Nama asli Player 2">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Nama Minecraft</label>
+                        <input type="text" id="teamP2Mc" placeholder="Nickname Minecraft Player 2">
+                    </div>
+                </div>
 
-<button onclick="backMenu()">Kembali</button>
-</section>
+                <div class="player-fields-block">
+                    <div class="player-fields-title">Player 3</div>
+                    <div class="form-group">
+                        <label>Nama</label>
+                        <input type="text" id="teamP3Name" placeholder="Nama asli Player 3">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Nama Minecraft</label>
+                        <input type="text" id="teamP3Mc" placeholder="Nickname Minecraft Player 3">
+                    </div>
+                </div>
 
-<!-- TOP UP -->
-<section id="topup" class="hidden">
-<h1>Cursebane Top Up</h1>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('menu-daftar')">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn" id="btnSubmitTim">
+                        <span class="spinner" id="spinnerTim"></span>
+                        <span class="btn-text">Kirim</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
 
-<h2>Money</h2>
-<p>5000 Money - 7K</p>
-<p>10000 Money - 14K</p>
+    <!-- ========================================== -->
+    <!-- 4. FORM SOLO -->
+    <!-- ========================================== -->
+    <section id="form-solo" class="page-section">
+        <div class="glass-card form-container">
+            <div class="form-header">
+                <h2>Formulir Registrasi Solo</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Masukkan identitasmu sebagai peserta solo.</p>
+            </div>
+            <form id="soloForm" onsubmit="handleRegister(event, 'solo')">
+                <div class="form-group">
+                    <label>Nama</label>
+                    <input type="text" id="soloRealName" placeholder="Nama asli kamu">
+                </div>
+                <div class="form-group">
+                    <label>Nama Minecraft</label>
+                    <input type="text" id="soloName" placeholder="Nickname Minecraft Kamu">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="navigateTo('menu-daftar')">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn" id="btnSubmitSolo">
+                        <span class="spinner" id="spinnerSolo"></span>
+                        <span class="btn-text">Kirim</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
 
-<h2>Key</h2>
-<p>Basic Crate - 2K / key</p>
-<p>Legends - 4K / key</p>
-<p>Mythic - 7K / key</p>
+    <!-- ========================================== -->
+    <!-- 5. HALAMAN PESERTA -->
+    <!-- ========================================== -->
+    <section id="peserta" class="page-section">
+        <button class="btn btn-secondary" onclick="navigateTo('home')" style="margin-bottom: 20px;">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </button>
 
-<button onclick="backMenu()">Kembali</button>
-</section>
+        <div class="peserta-header">
+            <div>
+                <h2>Daftar Peserta Event</h2>
+                <p style="color: var(--text-muted);">Daftar seluruh tim dan player yang terverifikasi.</p>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" oninput="renderParticipants()" placeholder="Cari peserta/tim...">
+            </div>
+        </div>
 
-<!-- SERIES -->
-<section id="series" class="hidden">
-<h1>Cursebane Oddesey</h1>
-<p>Server Survival RPG dengan Custom Enchant dan Dungeon menyeramkan.</p>
+        <div class="peserta-grid" id="participantsList">
+            <!-- Data Peserta Render di Sini -->
+        </div>
+    </section>
 
-<p>Gabung Discord:</p>
-<a href="https://discord.gg/QurP4MvE" target="_blank">https://discord.gg/QurP4MvE</a>
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-info" id="toastIcon"></i>
+        <span id="toastMessage">Pesan Notifikasi</span>
+    </div>
 
-<button onclick="backMenu()">Kembali</button>
-</section>
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. NAVBAR SCROLL EFFECT ---
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 30) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
 
-<!-- MYSTERY -->
-<div class="mystery" onclick="toggleMystery()">!</div>
-<div class="mystery-box" id="mysteryBox">
-<h3>Misteri</h3>
-<p>Coming Soon</p>
-</div>
+        // Mobile Nav Toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
 
-<script>
-function enterSite(){
-document.getElementById("home").classList.add("hidden");
-document.getElementById("menu").classList.remove("hidden");
-}
+        // --- 2. PAGE NAVIGATION SYSTEM ---
+        function navigateTo(pageId) {
+            // Tutup mobile menu jika terbuka
+            navLinks.classList.remove('active');
 
-function showSejarah(){
-hideAll();
-document.getElementById("sejarah").classList.remove("hidden");
-}
+            // Switch active section
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(pageId);
+            if(targetSection) {
+                targetSection.classList.add('active');
+            }
 
-function showTopup(){
-hideAll();
-document.getElementById("topup").classList.remove("hidden");
-}
+            // Update active state di navbar link
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const activeNav = document.getElementById(`nav-${pageId}`);
+            if (activeNav) activeNav.classList.add('active');
 
-function showSeries(){
-hideAll();
-document.getElementById("series").classList.remove("hidden");
-}
+            // Scroll ke atas otomatis
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
-function backMenu(){
-hideAll();
-document.getElementById("menu").classList.remove("hidden");
-}
+            // Refresh data jika ke Halaman Peserta atau Home
+            if (pageId === 'peserta' || pageId === 'home') {
+                renderParticipants();
+                updateStats();
+            }
+        }
 
-function hideAll(){
-document.getElementById("menu").classList.add("hidden");
-document.getElementById("sejarah").classList.add("hidden");
-document.getElementById("topup").classList.add("hidden");
-document.getElementById("series").classList.add("hidden");
-}
+        // --- 3. TOAST NOTIFICATION ---
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
 
-function toggleMystery(){
-let box=document.getElementById("mysteryBox");
-box.style.display=box.style.display==="block"?"none":"block";
-}
-</script>
+            toastMessage.textContent = message;
+            toast.className = `toast show ${type}`;
 
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-triangle-exclamation';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check';
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- 4. LOCALSTORAGE MANAGEMENT ---
+        function getParticipants() {
+            return JSON.parse(localStorage.getItem('ebt_participants')) || [];
+        }
+
+        function saveParticipants(data) {
+            localStorage.setItem('ebt_participants', JSON.stringify(data));
+        }
+
+        // --- 5. HANDLE FORM SUBMISSION WITH LOADING ---
+        function handleRegister(e, type) {
+            e.preventDefault();
+
+            let newEntry = null;
+
+            if (type === 'tim') {
+                const teamName = document.getElementById('teamName').value.trim();
+                const p1Name = document.getElementById('teamP1Name').value.trim();
+                const p1Mc = document.getElementById('teamP1Mc').value.trim();
+                const p2Name = document.getElementById('teamP2Name').value.trim();
+                const p2Mc = document.getElementById('teamP2Mc').value.trim();
+                const p3Name = document.getElementById('teamP3Name').value.trim();
+                const p3Mc = document.getElementById('teamP3Mc').value.trim();
+
+                // Validasi Data Kosong
+                if (!teamName || !p1Name || !p1Mc || !p2Name || !p2Mc || !p3Name || !p3Mc) {
+                    showToast("Lengkapi semua data terlebih dahulu.", "error");
+                    return;
+                }
+
+                newEntry = {
+                    id: Date.now(),
+                    type: 'tim',
+                    teamName: teamName,
+                    players: [
+                        { name: p1Name, mcName: p1Mc },
+                        { name: p2Name, mcName: p2Mc },
+                        { name: p3Name, mcName: p3Mc }
+                    ],
+                    date: new Date().toLocaleDateString()
+                };
+
+            } else if (type === 'solo') {
+                const realName = document.getElementById('soloRealName').value.trim();
+                const soloName = document.getElementById('soloName').value.trim();
+
+                // Validasi Data Kosong
+                if (!realName || !soloName) {
+                    showToast("Lengkapi semua data terlebih dahulu.", "error");
+                    return;
+                }
+
+                newEntry = {
+                    id: Date.now(),
+                    type: 'solo',
+                    realName: realName,
+                    playerName: soloName,
+                    date: new Date().toLocaleDateString()
+                };
+            }
+
+            // Tampilkan Loading State
+            const btnSubmit = type === 'tim' ? document.getElementById('btnSubmitTim') : document.getElementById('btnSubmitSolo');
+            const spinner = type === 'tim' ? document.getElementById('spinnerTim') : document.getElementById('spinnerSolo');
+            const btnText = btnSubmit.querySelector('.btn-text');
+
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Memproses...';
+            btnSubmit.style.pointerEvents = 'none';
+
+            // Simulasi Delay/Loading Kecil
+            setTimeout(() => {
+                const currentData = getParticipants();
+                currentData.push(newEntry);
+                saveParticipants(currentData);
+
+                // Reset Form
+                if (type === 'tim') document.getElementById('teamForm').reset();
+                if (type === 'solo') document.getElementById('soloForm').reset();
+
+                // Reset Button State
+                spinner.style.display = 'none';
+                btnText.textContent = 'Kirim';
+                btnSubmit.style.pointerEvents = 'auto';
+
+                showToast("Pendaftaran berhasil.", "success");
+                
+                // Pindah ke Halaman Peserta
+                navigateTo('peserta');
+            }, 1000);
+        }
+
+        // --- 6. RENDER PARTICIPANTS & SEARCH ---
+        function renderParticipants() {
+            const container = document.getElementById('participantsList');
+            const recentContainer = document.getElementById('recentParticipants');
+            const searchKeyword = document.getElementById('searchInput').value.toLowerCase();
+            const data = getParticipants();
+
+            // Filter data sesuai pencarian
+            const filteredData = data.filter(item => {
+                if (item.type === 'tim') {
+                    return item.teamName.toLowerCase().includes(searchKeyword) ||
+                           item.players.some(p => p.name.toLowerCase().includes(searchKeyword) || p.mcName.toLowerCase().includes(searchKeyword));
+                } else {
+                    return item.playerName.toLowerCase().includes(searchKeyword) ||
+                           (item.realName && item.realName.toLowerCase().includes(searchKeyword));
+                }
+            });
+
+            // Render ke Halaman Peserta
+            container.innerHTML = '';
+            if (filteredData.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px;">Belum ada peserta terdaftar.</p>`;
+            } else {
+                filteredData.reverse().forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-card card-peserta';
+
+                    if (item.type === 'tim') {
+                        card.innerHTML = `
+                            <div class="card-peserta-header">
+                                <i class="fa-solid fa-users"></i> ${item.teamName}
+                            </div>
+                            <ul class="player-list">
+                                ${item.players.map(p => `
+                                    <li>
+                                        <div class="player-name-line"><i class="fa-solid fa-chevron-right"></i> ${p.name}</div>
+                                        <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${p.mcName}</div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="card-peserta-header">
+                                <i class="fa-solid fa-user"></i> ${item.playerName}
+                            </div>
+                            <ul class="player-list">
+                                <li>
+                                    <div class="player-name-line"><i class="fa-solid fa-id-card"></i> ${item.realName || '-'}</div>
+                                    <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${item.playerName}</div>
+                                </li>
+                            </ul>
+                        `;
+                    }
+                    container.appendChild(card);
+                });
+            }
+
+            // Render Preview 3 Peserta Terbaru di Home
+            if(recentContainer) {
+                recentContainer.innerHTML = '';
+                const recentData = [...data].reverse().slice(0, 3);
+                if(recentData.length === 0) {
+                    recentContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Belum ada pendaftar terbaru.</p>`;
+                } else {
+                    recentData.forEach(item => {
+                        const miniCard = document.createElement('div');
+                        miniCard.className = 'glass-card';
+                        miniCard.style.padding = '15px';
+                        miniCard.style.fontSize = '0.9rem';
+
+                        if(item.type === 'tim') {
+                            miniCard.innerHTML = `<strong style="color: var(--purple-glow)"><i class="fa-solid fa-users"></i> ${item.teamName}</strong> (Tim)`;
+                        } else {
+                            miniCard.innerHTML = `<strong style="color: var(--purple-glow)"><i class="fa-solid fa-user"></i> ${item.playerName}</strong> (Solo)`;
+                        }
+                        recentContainer.appendChild(miniCard);
+                    });
+                }
+            }
+        }
+
+        // --- 7. UPDATE STATISTIK HOME ---
+        function updateStats() {
+            const data = getParticipants();
+            const total = data.length;
+            const timCount = data.filter(i => i.type === 'tim').length;
+            const soloCount = data.filter(i => i.type === 'solo').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statTim').textContent = timCount;
+            document.getElementById('statSolo').textContent = soloCount;
+        }
+
+        // --- INIT DATA PADA SAAT PERTAMA LOAD ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderParticipants();
+            updateStats();
+        });
+    </script>
 </body>
 </html>
