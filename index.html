@@ -643,7 +643,7 @@
             <li><a onclick="navigateTo('home')" class="nav-item active" id="nav-home">Home</a></li>
             <li><a onclick="navigateTo('menu-daftar')" class="nav-item" id="nav-daftar">Daftar</a></li>
             <li><a onclick="navigateTo('peserta')" class="nav-item" id="nav-peserta">Peserta</a></li>
-            <li><a href="https://discord.gg/f6UtajcwK" target="_blank" class="nav-btn-discord"><i class="fa-brands fa-discord"></i> Discord</a></li>
+            <li><a href="https://discord.gg" target="_blank" class="nav-btn-discord"><i class="fa-brands fa-discord"></i> Discord</a></li>
         </ul>
     </nav>
 
@@ -654,7 +654,7 @@
         <div class="hero">
             <div class="badge-ebt">EBT EVENT</div>
             <h1>Survival Challenge</h1>
-            <p>"bermain bersama orang orang baik."</p>
+            <p>"Bertahan hidup hingga akhir."</p>
             <button class="btn" onclick="navigateTo('menu-daftar')">
                 <i class="fa-solid fa-gamepad"></i> Daftar Sekarang
             </button>
@@ -848,8 +848,28 @@
         <span id="toastMessage">Pesan Notifikasi</span>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
+    <!-- FIREBASE SDK (Firestore sebagai database bersama) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, getDocs, query, orderBy
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Konfigurasi Firebase project "Ebt-event"
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEdZLhT2qG51QjXty_qG89bt1-qOSHKOU",
+            authDomain: "ebt-event-c1bfc.firebaseapp.com",
+            projectId: "ebt-event-c1bfc",
+            storageBucket: "ebt-event-c1bfc.firebasestorage.app",
+            messagingSenderId: "416438999634",
+            appId: "1:416438999634:web:20d1d110666fa981e3dd8b",
+            measurementId: "G-9H99HN82N5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const participantsRef = collection(db, "participants");
+
         // --- 1. NAVBAR SCROLL EFFECT ---
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
@@ -876,9 +896,9 @@
             document.querySelectorAll('.page-section').forEach(section => {
                 section.classList.remove('active');
             });
-            
+
             const targetSection = document.getElementById(pageId);
-            if(targetSection) {
+            if (targetSection) {
                 targetSection.classList.add('active');
             }
 
@@ -890,12 +910,12 @@
             // Scroll ke atas otomatis
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Refresh data jika ke Halaman Peserta atau Home
+            // Refresh data dari Firestore jika ke Halaman Peserta atau Home
             if (pageId === 'peserta' || pageId === 'home') {
-                renderParticipants();
-                updateStats();
+                loadParticipants();
             }
         }
+        window.navigateTo = navigateTo;
 
         // --- 3. TOAST NOTIFICATION ---
         function showToast(message, type = 'error') {
@@ -917,17 +937,35 @@
             }, 3000);
         }
 
-        // --- 4. LOCALSTORAGE MANAGEMENT ---
-        function getParticipants() {
-            return JSON.parse(localStorage.getItem('ebt_participants')) || [];
+        // --- 4. AMBIL DATA DARI FIRESTORE (dipakai bareng semua orang) ---
+        let cachedParticipants = [];
+
+        async function fetchParticipants() {
+            const q = query(participantsRef, orderBy("createdAt", "asc"));
+            const snapshot = await getDocs(q);
+            const data = [];
+            snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+            return data;
         }
 
-        function saveParticipants(data) {
-            localStorage.setItem('ebt_participants', JSON.stringify(data));
+        async function loadParticipants() {
+            const container = document.getElementById('participantsList');
+            if (container && document.getElementById('peserta').classList.contains('active')) {
+                container.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data peserta...</p>`;
+            }
+            try {
+                cachedParticipants = await fetchParticipants();
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal memuat data peserta. Cek koneksi/Firestore rules.", "error");
+                cachedParticipants = [];
+            }
+            renderParticipants();
+            updateStats();
         }
 
         // --- 5. HANDLE FORM SUBMISSION WITH LOADING ---
-        function handleRegister(e, type) {
+        async function handleRegister(e, type) {
             e.preventDefault();
 
             let newEntry = null;
@@ -948,7 +986,6 @@
                 }
 
                 newEntry = {
-                    id: Date.now(),
                     type: 'tim',
                     teamName: teamName,
                     players: [
@@ -956,7 +993,8 @@
                         { name: p2Name, mcName: p2Mc },
                         { name: p3Name, mcName: p3Mc }
                     ],
-                    date: new Date().toLocaleDateString()
+                    date: new Date().toLocaleDateString(),
+                    createdAt: Date.now()
                 };
 
             } else if (type === 'solo') {
@@ -970,11 +1008,11 @@
                 }
 
                 newEntry = {
-                    id: Date.now(),
                     type: 'solo',
                     realName: realName,
                     playerName: soloName,
-                    date: new Date().toLocaleDateString()
+                    date: new Date().toLocaleDateString(),
+                    createdAt: Date.now()
                 };
             }
 
@@ -987,34 +1025,36 @@
             btnText.textContent = 'Memproses...';
             btnSubmit.style.pointerEvents = 'none';
 
-            // Simulasi Delay/Loading Kecil
-            setTimeout(() => {
-                const currentData = getParticipants();
-                currentData.push(newEntry);
-                saveParticipants(currentData);
+            try {
+                // Simpan ke Firestore (bisa dibaca semua orang yang buka web ini)
+                await addDoc(participantsRef, newEntry);
 
                 // Reset Form
                 if (type === 'tim') document.getElementById('teamForm').reset();
                 if (type === 'solo') document.getElementById('soloForm').reset();
 
-                // Reset Button State
+                showToast("Pendaftaran berhasil.", "success");
+
+                // Pindah ke Halaman Peserta & refresh data
+                navigateTo('peserta');
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengirim data. Cek koneksi internet atau Firestore rules.", "error");
+            } finally {
                 spinner.style.display = 'none';
                 btnText.textContent = 'Kirim';
                 btnSubmit.style.pointerEvents = 'auto';
-
-                showToast("Pendaftaran berhasil.", "success");
-                
-                // Pindah ke Halaman Peserta
-                navigateTo('peserta');
-            }, 1000);
+            }
         }
+        window.handleRegister = handleRegister;
 
-        // --- 6. RENDER PARTICIPANTS & SEARCH ---
+        // --- 6. RENDER PARTICIPANTS & SEARCH (pakai data cache dari Firestore) ---
         function renderParticipants() {
             const container = document.getElementById('participantsList');
             const recentContainer = document.getElementById('recentParticipants');
-            const searchKeyword = document.getElementById('searchInput').value.toLowerCase();
-            const data = getParticipants();
+            const searchInput = document.getElementById('searchInput');
+            const searchKeyword = searchInput ? searchInput.value.toLowerCase() : '';
+            const data = cachedParticipants;
 
             // Filter data sesuai pencarian
             const filteredData = data.filter(item => {
@@ -1028,50 +1068,52 @@
             });
 
             // Render ke Halaman Peserta
-            container.innerHTML = '';
-            if (filteredData.length === 0) {
-                container.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px;">Belum ada peserta terdaftar.</p>`;
-            } else {
-                filteredData.reverse().forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-card card-peserta';
+            if (container) {
+                container.innerHTML = '';
+                if (filteredData.length === 0) {
+                    container.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px;">Belum ada peserta terdaftar.</p>`;
+                } else {
+                    [...filteredData].reverse().forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'glass-card card-peserta';
 
-                    if (item.type === 'tim') {
-                        card.innerHTML = `
-                            <div class="card-peserta-header">
-                                <i class="fa-solid fa-users"></i> ${item.teamName}
-                            </div>
-                            <ul class="player-list">
-                                ${item.players.map(p => `
+                        if (item.type === 'tim') {
+                            card.innerHTML = `
+                                <div class="card-peserta-header">
+                                    <i class="fa-solid fa-users"></i> ${item.teamName}
+                                </div>
+                                <ul class="player-list">
+                                    ${item.players.map(p => `
+                                        <li>
+                                            <div class="player-name-line"><i class="fa-solid fa-chevron-right"></i> ${p.name}</div>
+                                            <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${p.mcName}</div>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            `;
+                        } else {
+                            card.innerHTML = `
+                                <div class="card-peserta-header">
+                                    <i class="fa-solid fa-user"></i> ${item.playerName}
+                                </div>
+                                <ul class="player-list">
                                     <li>
-                                        <div class="player-name-line"><i class="fa-solid fa-chevron-right"></i> ${p.name}</div>
-                                        <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${p.mcName}</div>
+                                        <div class="player-name-line"><i class="fa-solid fa-id-card"></i> ${item.realName || '-'}</div>
+                                        <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${item.playerName}</div>
                                     </li>
-                                `).join('')}
-                            </ul>
-                        `;
-                    } else {
-                        card.innerHTML = `
-                            <div class="card-peserta-header">
-                                <i class="fa-solid fa-user"></i> ${item.playerName}
-                            </div>
-                            <ul class="player-list">
-                                <li>
-                                    <div class="player-name-line"><i class="fa-solid fa-id-card"></i> ${item.realName || '-'}</div>
-                                    <div class="player-mc-line"><i class="fa-solid fa-cube"></i> ${item.playerName}</div>
-                                </li>
-                            </ul>
-                        `;
-                    }
-                    container.appendChild(card);
-                });
+                                </ul>
+                            `;
+                        }
+                        container.appendChild(card);
+                    });
+                }
             }
 
             // Render Preview 3 Peserta Terbaru di Home
-            if(recentContainer) {
+            if (recentContainer) {
                 recentContainer.innerHTML = '';
                 const recentData = [...data].reverse().slice(0, 3);
-                if(recentData.length === 0) {
+                if (recentData.length === 0) {
                     recentContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Belum ada pendaftar terbaru.</p>`;
                 } else {
                     recentData.forEach(item => {
@@ -1080,7 +1122,7 @@
                         miniCard.style.padding = '15px';
                         miniCard.style.fontSize = '0.9rem';
 
-                        if(item.type === 'tim') {
+                        if (item.type === 'tim') {
                             miniCard.innerHTML = `<strong style="color: var(--purple-glow)"><i class="fa-solid fa-users"></i> ${item.teamName}</strong> (Tim)`;
                         } else {
                             miniCard.innerHTML = `<strong style="color: var(--purple-glow)"><i class="fa-solid fa-user"></i> ${item.playerName}</strong> (Solo)`;
@@ -1090,10 +1132,11 @@
                 }
             }
         }
+        window.renderParticipants = renderParticipants;
 
         // --- 7. UPDATE STATISTIK HOME ---
         function updateStats() {
-            const data = getParticipants();
+            const data = cachedParticipants;
             const total = data.length;
             const timCount = data.filter(i => i.type === 'tim').length;
             const soloCount = data.filter(i => i.type === 'solo').length;
@@ -1105,8 +1148,7 @@
 
         // --- INIT DATA PADA SAAT PERTAMA LOAD ---
         window.addEventListener('DOMContentLoaded', () => {
-            renderParticipants();
-            updateStats();
+            loadParticipants();
         });
     </script>
 </body>
